@@ -115,18 +115,26 @@
     - towerinstall
     - check_tower is failed
 
-- name: Ensure eula is accepted if posting license
-  lineinfile:
-    path: "{{playbook_dir}}/tower_license.json"
-    line: '    "eula_accepted": true,'
-    insertbefore: '"company_name"'
-    state: present
-  delegate_to: localhost
-  run_once: true
-  become: no
-  when:
-    - autolicense is defined
-    - autolicense
+# - name: Ensure eula is accepted if posting license
+#   lineinfile:
+#     path: "{{playbook_dir}}/tower_license.json"
+#     line: '    "eula_accepted": true,'
+#     insertbefore: '"company_name"'
+#     state: present
+#   delegate_to: localhost
+#   run_once: true
+#   become: no
+#   when:
+#     - autolicense is defined
+#     - autolicense
+- name: CONVERT VAR TO JSON
+  set_fact:
+    license_var: "{{ tower_license | from_json }}"
+
+- name: ADD A KEY/VAL PAIR
+  set_fact:
+    license_var: "{{ license_var | combine({'eula_accepted': 'true'})"
+
 
 - name: Post license key
   uri:
@@ -134,7 +142,7 @@
     method: POST
     user: admin
     password: "{{admin_password}}"
-    body: "{{ lookup('file',playbook_dir+'/tower_license.json') }}"
+    body: "{{ license_var | to_json  }}"
     body_format: json
     validate_certs: False
     force_basic_auth: yes
