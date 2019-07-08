@@ -73,6 +73,8 @@ PLAY RECAP *********************************************************************
 rtr1                       : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
+> NOTE: For this and the following steps, the playbook were run against a single router using the **hosts: rtr1** in order to have a concise output. In your lab, you will see this repeated for all devices
+
 #### Step 4
 
 Verify that the Ansible Playbook worked.  Login to `rtr1` and check the running configuration on the Cisco IOS-XE device.
