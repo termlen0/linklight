@@ -75,6 +75,8 @@ The goal of a *play* is to map a group of hosts.  The goal of a *task* is to imp
 
 If you are not very familiar with Ansible, see the following example of a playbook:
 
+**NOTE: The following is an illustrative example of a playbook**
+
 ```yaml
 ---
 - name: install and start apache
