@@ -2,6 +2,7 @@ secrets.yml
 users.yml
 extra_vars.yml
 *.txt
+!test-requirements.txt
 *.vagrant
 TODO
 TODO.md
@@ -26,4 +27,5 @@ provisioner/roles/geerlingguy.repo-epel/
 .swp
 Gemfile.lock
 Gemfile
-.projectile
+_site/*
+.tox/

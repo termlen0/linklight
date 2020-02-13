@@ -1,3 +1,4 @@
+---
 - name: Create AWS VPC {{ ec2_name_prefix }}-vpc
   ec2_vpc_net:
     name: "{{ ec2_name_prefix }}-vpc"
@@ -5,8 +6,8 @@
       - "{{ec2_subnet}}"
     region: "{{ ec2_region }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Linklight: "This was provisioned through the linklight provisioner"
       Students: "{{student_total}}"
   register: create_vpc_one_cidr
@@ -23,8 +24,8 @@
       - "{{ec2_subnet2}}"
     region: "{{ ec2_region }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Linklight: "This was provisioned through the linklight provisioner"
       Students: "{{student_total}}"
   register: create_vpc_two_cidr
@@ -43,8 +44,8 @@
     region: "{{ ec2_region }}"
     vpc_id: "{{create_vpc.vpc.id}}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Linklight: "This was provisioned through the linklight provisioner"
       Students: "{{student_total}}"
     rules:
@@ -76,6 +77,7 @@
         to_port: 8888
         from_port: 8888
         cidr_ip: 0.0.0.0/0
+        rule_desc: DevOps Sphinx Listener
       - proto: tcp
         to_port: 8000
         from_port: 8000
@@ -88,6 +90,16 @@
         to_port: 8088
         from_port: 8088
         cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        to_port: 8081
+        from_port: 8081
+        cidr_ip: 0.0.0.0/0
+        rule_desc: DevOps GOGs listener
+      - proto: tcp
+        to_port: 5000
+        from_port: 5000
+        cidr_ip: 0.0.0.0/0
+        rule_desc: DevOps Container Registry
       - proto: tcp
         to_port: 8089
         from_port: 8089
@@ -210,8 +222,8 @@
     vpc_id: "{{ create_vpc.vpc.id }}"
     region: "{{ ec2_region }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Skylight: "This was provisioned through the skylight provisioner"
       Students: "{{ student_total }}"
     rules:
@@ -230,8 +242,8 @@
     vpc_id: "{{ create_vpc.vpc.id }}"
     region: "{{ ec2_region }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Skylight: "This was provisioned through the skylight provisioner"
       Students: "{{ student_total }}"
     rules:
@@ -259,8 +271,8 @@
     vpc_id: "{{ create_vpc.vpc.id }}"
     region: "{{ ec2_region }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Skylight: "This was provisioned through the skylight provisioner"
       Students: "{{ student_total }}"
     rules:
@@ -284,8 +296,8 @@
     vpc_id: "{{ create_vpc.vpc.id }}"
     region: "{{ ec2_region }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Skylight: "This was provisioned through the skylight provisioner"
       Students: "{{ student_total }}"
     rules:
@@ -320,8 +332,8 @@
     wait_timeout: 600
     resource_tags:
       Name: "{{ ec2_name_prefix }}-subnet"
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Linklight: "This was provisioned through the linklight provisioner"
       Students: "{{student_total}}"
   register: create_subnet
@@ -338,8 +350,8 @@
     wait_timeout: 600
     resource_tags:
       Name: "{{ ec2_name_prefix }}-subnet2"
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Linklight: "This was provisioned through the linklight provisioner"
       Students: "{{student_total}}"
   register: create_subnet2
@@ -352,8 +364,8 @@
     region: "{{ ec2_region }}"
     vpc_id: "{{ create_vpc.vpc.id }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Linklight: "This was provisioned through the linklight provisioner"
       Students: "Total {{student_total}}"
   register: igw
@@ -371,8 +383,8 @@
       - dest: 0.0.0.0/0
         gateway_id: "{{ igw.gateway_id }}"
     tags:
-      Username: "{{ linklight_user }}"
-      Info: "Username that provisioned this-> {{ linklight_user }}"
+      Username: "{{ aws_user }}"
+      Info: "Username that provisioned this-> {{ aws_user }}"
       Linklight: "This was provisioned through the linklight provisioner"
       Students: "{{student_total}}"
   register: routetable
