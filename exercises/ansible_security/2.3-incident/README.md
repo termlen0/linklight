@@ -8,7 +8,7 @@ You are a security operator in charge of the corporate IDS. The IDS of our choic
 
 ## Step 3.2 - Preparations
 
-We will start this exercise with an operator looking at logs in Snort. So first we need to set up a snort rule to actually generate log entries. On your control host, create and run the playbook `incident_snort_rule.yml`:
+We will start this exercise with an operator looking at logs in Snort. So first we need to set up a snort rule to actually generate log entries. In your VS Code online editor, create and run the playbook `incident_snort_rule.yml`:
 
 <!-- {% raw %} -->
 ```yml
@@ -46,7 +46,7 @@ Run the playbook with:
 [student<X>@ansible ~]$ ansible-playbook incident_snort_rule.yml
 ```
 
-To have those rules generate logs, we need suspicious traffic - an attack. Again we have a playbook which simulates a simple access every five seconds on which the other components in this exercise will later on react to. On your control host, create the playbook `sql_injection_simulation.yml` with the following content:
+To have those rules generate logs, we need suspicious traffic - an attack. Again we have a playbook which simulates a simple access every few seconds on which the other components in this exercise will later on react to. In your VS Code online editor, create the playbook `sql_injection_simulation.yml` with the following content:
 
 <!-- {% raw %} -->
 ```yml
@@ -58,7 +58,7 @@ To have those rules generate logs, we need suspicious traffic - an attack. Again
 
   tasks:
     - name: simulate sql injection attack every 5 seconds
-      shell: "/sbin/daemonize /usr/bin/watch -n 5 curl -s http://{{ hostvars['snort']['private_ip2'] }}/sql_injection_simulation"
+      shell: "/sbin/daemonize /usr/bin/watch -n 5 curl -m 2 -s http://{{ hostvars['snort']['private_ip2'] }}/sql_injection_simulation"
 ```
 <!-- {% endraw %} -->
 
@@ -68,7 +68,7 @@ Run it with:
 [student<X>@ansible ~]$ ansible-playbook sql_injection_simulation.yml
 ```
 
-Also we need the QRadar collection. This was installed already in the previous QRadar exercise. If you missed that part, install them via: `ansible-galaxy collection install ibm.qradar
+Also we need the QRadar collection. This was installed already in the previous QRadar exercise. If you missed that part, install them via: `ansible-galaxy collection install ibm.qradar`
 
 Also, to let the traffic between both machines pass, two things from the first Check Point exercise need to be completed: first the playbook `whitelist_attacker.yml` must have been run. And the logging for the attacker whitelist policy must have been activated. If you missed those steps, go back to the first Check Point exercise, create and execute the playbook, follow the steps to activate the logging and come back here.
 
@@ -76,14 +76,14 @@ The stage is set now. Read on to learn what this use case is about.
 
 ## Step 3.3 - Identify incident
 
-As the security operator in charge of the corporate IDS, you routinely check the logs. From your Ansible control host, SSH to your snort node as the user `ec2-user` and view the logs:
+As the security operator in charge of the corporate IDS, you routinely check the logs. From the terminal of your VS Code online editor, SSH to your snort node as the user `ec2-user` and view the logs:
 
 ```bash
 [ec2-user@ip-172-16-11-22 ~]$ journalctl -u snort -f
 -- Logs begin at Sun 2019-09-22 14:24:07 UTC. --
-Sep 22 21:03:03 ip-172-16-115-120.ec2.internal snort[22192]: [1:99000030:1] Attempted Web Attack [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.17.78.163:53376 -> 172.17.23.180:80
-Sep 22 21:03:08 ip-172-16-115-120.ec2.internal snort[22192]: [1:99000030:1] Attempted Web Attack [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.17.78.163:53378 -> 172.17.23.180:80
-Sep 22 21:03:13 ip-172-16-115-120.ec2.internal snort[22192]: [1:99000030:1] Attempted Web Attack [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.17.78.163:53380 -> 172.17.23.180:80
+Sep 22 21:03:03 ip-172-16-115-120.ec2.internal snort[22192]: [1:99000030:1] Attempted SQL Injection [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.17.78.163:53376 -> 172.17.23.180:80
+Sep 22 21:03:08 ip-172-16-115-120.ec2.internal snort[22192]: [1:99000030:1] Attempted SQL Injection [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.17.78.163:53378 -> 172.17.23.180:80
+Sep 22 21:03:13 ip-172-16-115-120.ec2.internal snort[22192]: [1:99000030:1] Attempted SQL Injection [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.17.78.163:53380 -> 172.17.23.180:80
 ```
 
 As you see this node has just registered multiple alerts to an **Attempted Administrator Privilege Gain**. Leave the log view by pressing `CTRL-C`.
@@ -107,7 +107,7 @@ To better analyze this incident it is crucial to correlate the data with other s
 
 As you by now know, due to the missing integration of various security tool with each other, as a security operator in charge of the IDS we would now have to manually contanct another team or forward our logs via e-mail. Or upload them to a FTP server, carry them over on USB stick or worse. Luckily as shown in the last exercises already we can use Ansible to just configure Snort and Qradar.
 
-On your Ansible control host, create a playbook called `incident_snort_log.yml` like the following:
+In your VS Code online editor, create a playbook called `incident_snort_log.yml` like the following:
 
 <!-- {% raw %} -->
 ```yaml
@@ -161,11 +161,11 @@ Let's change our perspective briefly to the one of a security analyst: we mainly
 
 ![QRadar logs view, showing logs from Snort](images/qradar_incoming_snort_logs.png)
 
-Remember that it helps to add filters to the QRadar log view to get a better overview. Note that those logs already show the offense marker on the left side!
+Remember that it helps to add filters to the QRadar log view to get a better overview, and that it might be necessary to change the display to **Raw Events**. Note that those logs already show the offense marker on the left side!
 
 > **Note**
 >
-> If no logs are shown, wait a bit. It might take more than a minute to show the first entries. Also, the first logs might be identified with the right log source (showing **SIM Generic Log DSM-7** instead of **Snort rsyslog source**) so give it some time.
+> If no logs are shown, wait a bit. It might take more than a minute to show the first entries. Also, the first logs might be identified with the "default" log source (showing **SIM Generic Log DSM-7** instead of **Snort rsyslog source**) so give it some time.
 
 In the offenses tab filter the list of offenses for **Error Based SQL Injection**. Open the Offense summary to check the details of the attacker IP address previously seen in Snort logs.
 
@@ -175,7 +175,7 @@ With all these information at hand, we positively identify this event as an atta
 
 In a typical environment, performing this remediation would require yet another interaction with the security operators in charge of the firewalls. But we can launch an Ansible playbook to achieve the same goal in seconds rather than hours or days.
 
-On your Ansible control host, create a file called `incident_blacklist.yml`. Note that we do not enter the IP address here but again a variable, since Ansible already has the information from the inventory.
+In your VS Code online editor, create a file called `incident_blacklist.yml`. Note that we do not enter the IP address here but again a variable, since Ansible already has the information from the inventory.
 
 <!-- {% raw %} -->
 ```yaml
@@ -243,7 +243,7 @@ Execute the playbook `rollback.yml` we wrote in the last exercise to roll all ch
 
 Note here that the playbook runs through without problems - even though we did not configure Check Point as a log source for QRadar this time! This is possible since Ansible tasks are most often idempotent: they can be run again and again, ensuring the desired state.
 
-Also we need to kill the process sending out attack. On your control host, execute the follwing Ansible ad-hoc command:
+Also we need to kill the process sending out attack. From the terminal of your VS Code online editor, execute the follwing Ansible ad-hoc command:
 
 <!-- {% raw %} -->
 ```bash
@@ -254,7 +254,17 @@ attacker | CHANGED | rc=0 >>
 
 If you get an error saying `Share connection to ... closed.`, don't worry: just execute the command again.
 
-You are done with this exercise. Return to the list of the exercises and read the wrap up.
+You are done with this last exercise. Congratulations!
+
+## Step 3.8 - Wrap it all up
+
+It happens that the job of a CISO and her team is difficult even if they have in place all necessary tools, because the tools don’t integrate with each other. When there is a security breach, an analyst has to perform a triage, chasing all relevant piece of information across the entire infrastructure, taking days to understand what’s going on and ultimately perform any sort of remediation.
+
+Ansible Security Automation is a Red Hat initiative to facilitate the integration of a wide range of security solutions through a common and open automation language: Ansible. Ansible Security Automation is designed to help security analysts investigate and remediate security incidents faster.
+
+This is how ansible security automation can integrate three different security products, an enterprise firewall, an IDS, and a SIEM, to help security analysts and operators in detection and triage of suspicious activities, threat hunting and incident response.
+
+Ansible Security Automation allows security organizations to create pre-approved automation workflows, called playbooks, that can be maintained centrally and shared across different teams. And with the help of Tower, we can even provide those automation workflows to other teams in a controlled, user friendly and simple to consume way.
 
 ----
 

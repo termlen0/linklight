@@ -85,7 +85,7 @@ As a an example, let’s write a Playbook that:
 First we need the file Ansible will deploy, let’s just take the one from node1. Remember to replace the IP address shown in the listing below with the IP address from your individual `node1`.
 
 ```bash
-[student<X>@ansible ansible-files]$ scp 11.22.33.44:/etc/httpd/conf/httpd.conf ~/ansible-files/.
+[student<X>@ansible ansible-files]$ scp 11.22.33.44:/etc/httpd/conf/httpd.conf ~/ansible-files/files/.
 student<X>@11.22.33.44's password:
 httpd.conf             
 ```
@@ -221,7 +221,7 @@ Check the output:
 
   - Again the task is listed once, but three changes are listed. Each loop with its content is shown.
 
-Verify that the user `prod_user` was indeed created on `node1`:
+Verify that the user `dev_user` was indeed created on `node1`:
 
 ```bash
 [student<X>@ansible ansible-files]$ ansible node1 -m command -a "id dev_user"

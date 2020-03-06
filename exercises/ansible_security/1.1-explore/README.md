@@ -30,63 +30,31 @@ In this lab you work in a pre-configured lab environment. You will have access t
 
 The lab is set up individually for you. You have your own environment, own services, own virtual machines.
 
-All interactions with the environment are either done via SSH, or via web browser. All SSH connections should be to your control host, from which the Ansible playbooks are executed. The web browser connections are explained in the  later exercises since they are very specific to the corresponding solutions.
+![Red Hat Ansible Security Workshop Pod](images/diagram.png)
 
-```
-      +-------------+
-      |             |
-      |  Lab        |
-      |  computer   +-----------------^------------------->
-      |             |                 |                   |
-      +-----+-------+                 | RDP/HTTP          | HTTP
-            |                         |                   |
-        SSH |                         |            +------+------+
-            |                         |            |             |
-      +-----v-------+          +------+------+     | QRadar      |
-  SSH | Ansible     |  REST    | Windows     |     |             |
-+-----+ Control     +----+---->+ Workstation |     +--+---+------+
-|     | Host        |    |     +------+------+        ^   ^
-|     +-------------+    |            |               |   |
-|                        +------------o---------------+   |
-|                                     |                   |
-|                              +------+------+            |
-|                              |             |    Syslog  |
-|     +-------------+          | Check Point +------------^
-|     |             |          | MGMT        |            |
-| SSH | Attacker    |  HTTP    |             |            |
-+-----+             +------+   +------+------+            |
-|     |             |      |          |                   |
-|     +-------------+      |          |                   |
-|                          |          |                   |
-|                          |   +------+------+            |
-|                          +---+             |            |
-|                              | Check Point |            |
-|     +-------------+      +---+ Firewall    |            |
-| SSH |             |      |   |             |            |
-+-----+ IDS Snort   +------+   +-------------+            |
-      |             |  HTTP                               |
-      +------+------+                                     |
-             |                    Syslog                  |
-             +--------------------------------------------+
-```
+For the exercises of section 2 we need to have security incidents. Those should happen on a **target** machine - that is Snort server. It is basically a RHEL installation with Snort installed and running a simplified web server to run attacks against.
 
 ## Step 1.3 - Access the Ansible Environment
 
-For a start, log into your Ansible control host via SSH. Open a terminal and type the following command:
+All automation is done from the Ansible control host, a Red Hat Enterprise Linux machine. To make access to the control host and managing files on it easier there is a online version of VS Code editor installed directly on the control host. This way it can be accessed via a normal web browser. Commands can be executed right from the terminal within the VS Code editor.
 
-> **Warning**
-> 
-> In the next examples, replace **11.22.33.44** by the **IP** of your control host, provided to you by the instructor. Also, replace the **X** in student**X** by the student number provided to you. In all following examples and in all other cases were examples contain IP addresses, always replace them with the **IP** addresses from your individual setup
+Let's access the Visual Studio Code. Click on the link for VS Code access from the workshop page:
 
-Open a terminal and type the following command to connect to your control host via SSH:
+![VS Code Access](images/1-vscode-access.png)
 
-```bash
-ssh studentX@11.22.33.44
-```
+At this point, you will see a **Welcome** page:
 
-The password is **ansible** if not otherwise noted.
+![VS Code - Welcome](images/1-vscode-welcome-page.png)
 
-Most prerequisite tasks have already been done for you:
+From within this environment, you can create and modify files or open a terminal and execute commands.
+
+## Step 1.4 - Open and use the Terminal in VS Code
+
+So let's open a new terminal in VS Code. In the menu bar, click on **Terminal** > **New Terminal**. 
+
+![VS Code - New Terminal](images/1-vscode-new-terminal.png)
+
+A new terminal will be opened in the lower part of your editor and you will be at the command prompt. Note that most prerequisite tasks have already been done for you:
 
   - Ansible software is installed
 
@@ -94,23 +62,31 @@ Most prerequisite tasks have already been done for you:
 
   - `sudo` has been configured on the managed hosts to run commands that require root privileges.
 
-Check Ansible has been installed correctly
+Note that each student is assigned a student number, i.e. X and you should work as the student <X> user on the control node if not explicitly told differently.
+
+Next, proceed to check that Ansible has been installed correctly.
 
 ```bash
     [student<X>@ansible ~]$ ansible --version
-    ansible 2.8.2
-    [...]
 ```
 
-In all subsequent exercises you should work as the student\<X\> user on the control node if not explicitly told differently.
+The result should resemble the following:
+
+![VS Code - Check Ansible Version](images/1-vscode-check-ansible-version.png)
 
 > **Note**
 > 
 > Ansible is keeping configuration management simple. Ansible requires no database or running daemons and can run easily on a laptop. On the managed hosts it needs no running agent.
 
-## Step 1.4 - Your inventory
+## Step 1.5 - Your inventory
 
-The inventory of your environment will be provided in a static, ini-type file. It can be found at `/home/student<X>/lab_inventory/hosts` and looks like the following listing. Please note that the IP addresses provided here are just an example and will be different in your lab environment:
+Let's open a file in VS Code. In the menu bar, click on **File**, **Open File**. In the middle of the screen, a drop down menu opens with the available file content of the home directory of your user:
+
+![VS Code - VS Code file picker](images/1-vscode-filepicker.png)
+
+Pick **lab_inventory**, this will immediately update the file list. In the new file list, pick **hosts**. This will open the inventory of you environment.
+
+As you see, the inventory of your environment is provided in a static, ini-type file. It looks like the following listing. Please note that the IP addresses provided here are just an example and will be different in your lab environment:
 
 ```ini
 [all:vars]
@@ -137,25 +113,17 @@ checkpoint ansible_host=44.55.66.77 ansible_user=admin private_ip=192.168.4.5 an
 windows-ws ansible_host=55.66.77.88 ansible_user=Administrator ansible_pass=RedHat19! ansible_port=5986 ansible_connection=winrm ansible_winrm_server_cert_validation=ignore private_ip=192.168.5.6
 ```
 
-On your control host, have a look at the inventory by executing the command `cat ~/lab_inventory/hosts`. All the IP addresses are specific to your environment. Whenever the exercises ask you to access a certain machine, you can always look up the IP in the inventory on the control host.
+All the IP addresses are specific to your environment. Whenever the exercises ask you to access a certain machine, you can always look up the IP in the inventory on the control host.
 
 Ansible is already configured to use the inventory specific to your environment. As shown in the example above, the inventory carries more than just the host names and IP addresses. Especially in the case of the Windows workstation, several more parameters are set.
 
 > **Note**
 > 
-> Not all hosts in your lab can be reached vis SSH. During the exercises, each node type will be explained in detail and the means how to access the resources will be shown step by step.
-
-## Step 1.5 - Victim machine
-
-For the exercises of section 2 we need to have security incidents. Those should happen on a **victim** machine - that is Snort server. It is basically a RHEL installation with Snort installed and running a simplified web server to run attacks against.
+> Not all hosts in your lab can be reached via SSH or WinRM. Some are accessed via REST API, RDP or web browser. During the exercises, each node type will be explained in detail and the means how to access the resources will be shown step by step.
 
 ## Step 1.6 - Working the Labs
 
-You might have guessed by now this lab is pretty commandline-centric…​ :-)
-
-  - Don’t type everything manually, use copy & paste from the browser when appropriate. But stop to think and understand.
-
-  - All labs were prepared using **Vim**, but we understand not everybody loves it. Feel free to use alternative editors. In the lab environment we provide **Midnight Commander** (just run **mc**, function keys can be reached via Esc-\<n\> or simply clicked with the mouse) or **Nano** (run **nano**). Here is a short [editor intro](../0.0-support-docs/editor_intro.md).
+You might have guessed by now this lab is pretty commandline-centric…​ So we recommend that you don’t type everything manually, use copy & paste from the browser when appropriate. But stop to think and understand.
 
 ----
 

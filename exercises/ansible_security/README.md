@@ -6,6 +6,18 @@ In this workshop shows you will learn - step by step - how you can use Ansible t
 
 **Read this in other languages**: [![uk](../../images/uk.png) English](README.md).
 
+## Time planning
+
+The time required to do the workshops strongly depends on multiple factors: the number of participants, how familiar those are with Linux in general and how much discussions are done in between.
+
+Given students with basic experience with Ansible:
+
+- the introduction takes roughly 30 minutes
+- the first exercise takes roughly one hour
+- the second exercise takes roughly two hours
+
+If your experience is different in schedulung those workshops, please let us know and fill an issue.
+
 ## Section 1 - Introduction to Ansible Security Automation Basics
 
  - [Exercise 1.1 - Exploring the lab environment](1.1-explore)
@@ -18,7 +30,6 @@ In this workshop shows you will learn - step by step - how you can use Ansible t
  - [Exercise 2.1 - Detection and triage of suspicious activities](2.1-suspicious)
  - [Exercise 2.2 - Threat hunting](2.2-threat)
  - [Exercise 2.3 - Incident response](2.3-incident)
- - [Exercise 2.4 - Wrap it all up](2.4-wrap)
 
 ## Additional information
 
